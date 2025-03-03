@@ -1,10 +1,12 @@
 import re
+import os
 import typing as t
 
 import click
 
 from .utils import _colorize, _extend_instance
 
+AUGMET_HELP_BOLD = True if os.getenv("AUGMET_HELP_BOLD", "false").lower() == "true" else False
 
 class HelpColorsFormatter(click.HelpFormatter):
     options_regex = re.compile(r'-{1,2}[\w\-]+')
@@ -42,14 +44,23 @@ class HelpColorsFormatter(click.HelpFormatter):
             prefix = 'Usage'
 
         colorized_prefix = _colorize(prefix, color=self.headers_color, suffix=": ")
-        super().write_usage(prog, args, prefix=colorized_prefix)
+        if AUGMET_HELP_BOLD:
+            super().write_usage(prog, args, prefix=click.style(colorized_prefix, bold=True))
+        else:
+            super().write_usage(prog, args, prefix=colorized_prefix)
 
     def write_heading(self, heading: str) -> None:
         colorized_heading = _colorize(heading, color=self.headers_color)
-        super().write_heading(colorized_heading)
+        if AUGMET_HELP_BOLD:
+            super().write_heading(click.style(colorized_heading, bold=True))
+        else:
+            super().write_heading(colorized_heading)
 
     def write_dl(self, rows: t.Sequence[t.Tuple[str, str]], col_max: int = 30, col_spacing: int = 2) -> None:
-        colorized_rows = [(_colorize(row[0], self._pick_color(row[0])), row[1]) for row in rows]
+        if AUGMET_HELP_BOLD:
+            colorized_rows = [(_colorize(click.style(row[0], bold=True), self._pick_color(row[0])), row[1]) for row in rows]
+        else:
+            colorized_rows = [(_colorize(row[0], self._pick_color(row[0])), row[1]) for row in rows]
         super().write_dl(colorized_rows, col_max, col_spacing)
 
 
